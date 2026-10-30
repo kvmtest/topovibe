@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TopoVibe — Cultural Intelligence Globe</title>
+    <meta
+      name="description"
+      content="Fly a 3D globe, click a city, see what it actually loves. Qloo taste graph + Grounding Score."
+    />
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <div id="cesiumContainer"></div>
+
+    <header id="brand">
+      <h1>Topo<span class="accent">Vibe</span></h1>
+      <p class="tagline">what a place actually <em>loves</em> — not just what's loud</p>
+    </header>
+
+    <nav id="citybar" aria-label="Demo cities"></nav>
+
+    <aside id="panel" class="hidden" aria-live="polite"></aside>
+
+    <div id="coverage" class="badge badge-muted" title="Data coverage">…</div>
+
+    <div id="toast" class="hidden"></div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

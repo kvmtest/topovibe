@@ -1,0 +1,29 @@
+{
+  "name": "topovibe",
+  "version": "0.1.0",
+  "description": "TopoVibe — the cultural-intelligence globe & MCP oracle. Qloo taste graph underneath, Grounding Score on top.",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20.7"
+  },
+  "scripts": {
+    "dev": "concurrently -n web,api -c cyan,magenta \"vite\" \"nodemon --watch server --watch scripts/dev-server.mjs scripts/dev-server.mjs\"",
+    "build": "vite build",
+    "start": "node --env-file-if-exists=.env server/index.js",
+    "selfcheck": "node --env-file-if-exists=.env scripts/selfcheck.mjs",
+    "precache": "node --env-file-if-exists=.env scripts/precache.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.20.2",
+    "cesium": "^1.123.0",
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "nodemon": "^3.1.9",
+    "vite": "^5.4.19",
+    "vite-plugin-cesium": "^1.2.23"
+  }
+}

@@ -1,0 +1,3 @@
+This directory holds the private Qloo demo pre-cache (precache.json).
+It is git-ignored on purpose: Qloo responses are cached privately per Qloo
+terms and never committed (brief §12). Only this .gitkeep is tracked.
