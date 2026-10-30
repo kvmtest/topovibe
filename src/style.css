@@ -59,6 +59,27 @@ html, body {
 #citybar button:hover { border-color: var(--accent); }
 #citybar button.active { background: var(--accent); color: #111; border-color: var(--accent); }
 
+#heatbar {
+  position: absolute;
+  top: 84px;
+  left: 18px;
+  z-index: 10;
+  display: flex;
+  gap: 6px;
+}
+#heatbar button {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  color: var(--text);
+  padding: 5px 11px;
+  border-radius: 999px;
+  font-size: 12px;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+}
+#heatbar button:hover { border-color: var(--accent); }
+#heatbar button.active { border-color: var(--accent); color: var(--accent); }
+
 #panel {
   position: absolute;
   top: 70px;

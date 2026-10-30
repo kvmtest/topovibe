@@ -2,8 +2,10 @@
 import { createGlobe, flyToCity } from './globe.js';
 import { CITIES } from './cities.js';
 import { showDna } from './panels/dna.js';
+import { initHeatmap } from './layers/heatmap.js';
 
 const viewer = createGlobe('cesiumContainer');
+initHeatmap(viewer);
 
 // --- Demo-city buttons (keyless "search": bundled coords, no geocoder dependency) ---
 const citybar = document.getElementById('citybar');

@@ -10,7 +10,10 @@ export default defineConfig({
     port: 4173,
     strictPort: true,
     watch: {
-      // editor temp files (~RF*.TMP) crash chokidar with EBUSY on Windows
+      // fs.watch on Windows collides with atomic editor writes (EBUSY);
+      // polling is crash-proof here.
+      usePolling: true,
+      interval: 400,
       ignored: ['**/*.TMP', '**/.git/**', '**/cache/**'],
     },
     proxy: {

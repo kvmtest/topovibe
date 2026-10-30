@@ -149,8 +149,74 @@ router.get(
   })
 );
 
-// --- GET /api/heatmap?city=&tag= (Phase 3) --------------------------------
-router.get('/heatmap', notYet('Phase 3 (heatmap)'));
+// --- GET /api/heatmap?city=&tag= — one tag draped over one city -------------
+// tag may be a full URN or a keyword (resolved via /v2/tags first — rule 5).
+router.get(
+  '/heatmap',
+  asyncWrap(async (req, res) => {
+    const city = String(req.query.city ?? '').trim();
+    let tag = String(req.query.tag ?? '').trim();
+    if (!city || !tag) {
+      return res.status(400).json({ error: 'BadRequest', message: 'city and tag are required' });
+    }
+
+    let tagName = tag;
+    let resolveMeta = null;
+    if (!tag.startsWith('urn:')) {
+      // Resolve keyword → real tag URN before signaling (brief rule 5)
+      const resolved = await qlooWithMeta('/v2/tags', { 'filter.query': tag, take: '1' });
+      resolveMeta = resolved.meta;
+      const hit = resolved.json?.results?.tags?.[0];
+      if (!hit?.id) {
+        return res.json({
+          city,
+          tag,
+          points: [],
+          coverage: 'insufficient-data',
+          queries: [resolved.meta.query],
+          message: `No Qloo tag found for keyword "${tag}".`,
+        });
+      }
+      tag = hit.id;
+      tagName = hit.name;
+    }
+
+    const { json, meta } = await qlooWithMeta('/v2/insights', {
+      'filter.type': 'urn:heatmap',
+      'filter.location.query': city,
+      'signal.interests.tags': tag,
+      'bias.trends': 'medium',
+    });
+
+    const cells = json?.results?.heatmap ?? [];
+    // Deterministic downsample: sort by geohash, stride to cap payload for the client
+    const MAX_POINTS = 1600;
+    let points = cells.map((c) => ({
+      lat: c.location?.latitude,
+      lon: c.location?.longitude,
+      geohash: c.location?.geohash,
+      affinity: c.query?.affinity,
+      affinityRank: c.query?.affinity_rank,
+      popularity: c.query?.popularity,
+    }));
+    points.sort((a, b) => (a.geohash < b.geohash ? -1 : 1));
+    if (points.length > MAX_POINTS) {
+      const stride = points.length / MAX_POINTS;
+      points = points.filter((_, i) => i % Math.ceil(stride) === 0);
+    }
+
+    const queries = [resolveMeta?.query, meta.query].filter(Boolean);
+    res.json({
+      city,
+      tag,
+      tagName,
+      points,
+      totalCells: cells.length,
+      coverage: points.length === 0 ? 'insufficient-data' : meta.coverage,
+      queries,
+    });
+  })
+);
 
 // --- GET /api/grounding?city=&tag= (Phase 4) ------------------------------
 router.get('/grounding', notYet('Phase 4 (Grounding Score)'));
