@@ -10,6 +10,8 @@ Built for the **Qloo Agentic Hackathon** · MIT License · [Development brief](.
 
 ![Austin Cultural DNA panel — signature tags, demographics, top places](docs/screenshots/topovibe-austin-dna.png)
 
+![Grounding Score markers + record-store heatmap over Austin (restored from a share link)](docs/screenshots/topovibe-gs-heatmap.png)
+
 ---
 
 ## Why TopoVibe

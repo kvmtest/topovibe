@@ -32,7 +32,11 @@ html, body {
   left: 18px;
   z-index: 10;
   pointer-events: none;
-  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.9);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px 16px;
+  backdrop-filter: blur(8px);
 }
 #brand h1 { margin: 0; font-size: 28px; letter-spacing: 0.5px; }
 #brand .accent { color: var(--accent); }
@@ -124,7 +128,16 @@ html, body {
 .badge-cached { color: var(--accent); border-color: var(--accent); }
 .badge-insufficient, .badge-muted { color: var(--grey); border-color: var(--grey); }
 
-#coverage { position: absolute; left: 18px; bottom: 16px; z-index: 10; background: var(--panel); }
+#coverage { position: absolute; left: 18px; bottom: 60px; z-index: 10; background: var(--panel); }
+
+/* Cesium's toolbar (home/camera buttons) defaults to top-right where the demo
+   city bar lives — relocate it to the free bottom-left corner. */
+.cesium-viewer-toolbar {
+  top: auto !important;
+  right: auto !important;
+  bottom: 16px;
+  left: 18px;
+}
 
 .chip {
   display: inline-block;
