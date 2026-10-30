@@ -152,11 +152,11 @@ Inspect interactively: `npx @modelcontextprotocol/inspector` → connect → `ht
 
 ## Deployment
 
-One service serves everything (static client + REST + MCP):
+One service serves everything (static client + REST + MCP) — so one host covers the whole app:
 
-- **Render** — [`render.yaml`](render.yaml) included: new Blueprint → point at repo → set `QLOO_API_KEY` env var → deploy. Build: `npm install --ignore-scripts && npm run build`; start: `npm start`.
+- **AWS App Runner** (used for this submission) — [`apprunner.yaml`](apprunner.yaml) included: App Runner → Create service → Source: GitHub `kvmtest/topovibe`, branch `main` → Build: "use configuration file" → set env var `QLOO_API_KEY` in the console → Deploy. App Runner builds (`npm install && npm run build`), starts `npm start` on port 4173, and issues a managed HTTPS URL.
+- **Render** — [`render.yaml`](render.yaml) Blueprint alternative (same one-service model).
 - **Fly.io** — `fly launch` (Node 20+, port 4173), `fly secrets set QLOO_API_KEY=...`.
-- **Railway/Netlify+functions etc.** — any Node host works; the client is static and the API is a single Express app.
 
 After deploying, point `mcp.json` at `https://<your-host>/mcp`.
 

@@ -1,0 +1,23 @@
+# AWS App Runner — one service serves static client + REST + MCP (brief §9 ship)
+# Console path: App Runner → Create service → Source: GitHub kvmtest/topovibe →
+#   Deployment settings: branch main → Build: use this configuration file.
+# QLOO_API_KEY is set as a plain env var in the console (never in the repo).
+version: 1.0
+runtime: nodejs22
+build:
+  commands:
+    build:
+      - npm install
+      - npm run build
+run:
+  runtime-version: 22
+  command: npm start
+  network:
+    port: 4173
+  env:
+    - name: QLOO_BASE_URL
+      value: https://hackathon.api.qloo.com
+    - name: PORT
+      value: "4173"
+    - name: DEMO_CITIES
+      value: Austin,New York City,Tokyo
