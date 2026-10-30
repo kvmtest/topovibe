@@ -1,0 +1,10 @@
+{
+  "$comment": "TopoVibe MCP — point any MCP client (Claude Desktop, Cursor, agent loops) at the running server. Dev: npm run dev → http://localhost:4173/mcp (proxied). Prod: https://<your-host>/mcp.",
+  "mcpServers": {
+    "topovibe": {
+      "type": "streamable-http",
+      "url": "http://localhost:4173/mcp",
+      "description": "Cultural ground truth: resolve_entities · resolve_tags · get_insights · get_taste_profile · get_grounding_score"
+    }
+  }
+}
