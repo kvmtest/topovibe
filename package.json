@@ -9,7 +9,7 @@
     "node": ">=20.7"
   },
   "scripts": {
-    "dev": "concurrently -n web,api -c cyan,magenta \"vite\" \"nodemon --watch server --watch scripts/dev-server.mjs scripts/dev-server.mjs\"",
+    "dev": "concurrently -n web,api -c cyan,magenta \"vite\" \"nodemon -L --watch server --watch scripts/dev-server.mjs scripts/dev-server.mjs\"",
     "build": "vite build",
     "start": "node --env-file-if-exists=.env server/index.js",
     "selfcheck": "node --env-file-if-exists=.env scripts/selfcheck.mjs",
