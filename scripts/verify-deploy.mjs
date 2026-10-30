@@ -52,10 +52,18 @@ const get = async (p) => {
     body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list', params: {} }),
   });
   const text = await r.text();
-  const line = text.split('\n').find((l) => l.startsWith('data: '));
-  const body = line ? JSON.parse(line.slice(6)) : JSON.parse(text);
-  const names = (body?.result?.tools ?? []).map((t) => t.name).sort();
-  check('mcp tools/list', names.length === 5, names.join(', '));
+  let names = [];
+  let detail = `HTTP ${r.status}`;
+  try {
+    const line = text.split('\n').find((l) => l.startsWith('data: '));
+    const body = line ? JSON.parse(line.slice(6)) : JSON.parse(text);
+    names = (body?.result?.tools ?? []).map((t) => t.name).sort();
+    if (names.length) detail = names.join(', ');
+  } catch {
+    detail = `HTTP ${r.status} ${text.slice(0, 120)}`;
+  }
+  if (r.status === 429) detail = 'rate-limited (30/min — wait a minute and re-run)';
+  check('mcp tools/list', names.length === 5, detail);
 }
 // 7. HTTPS (deploy only)
 if (BASE.startsWith('https://')) check('https enabled', true, BASE);
