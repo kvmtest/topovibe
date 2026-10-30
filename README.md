@@ -154,7 +154,8 @@ Inspect interactively: `npx @modelcontextprotocol/inspector` → connect → `ht
 
 One service serves everything (static client + REST + MCP) — so one host covers the whole app:
 
-- **AWS App Runner** (used for this submission) — [`apprunner.yaml`](apprunner.yaml) included: App Runner → Create service → Source: GitHub `kvmtest/topovibe`, branch `main` → Build: "use configuration file" → set env var `QLOO_API_KEY` in the console → Deploy. App Runner builds (`npm install && npm run build`), starts `npm start` on port 4173, and issues a managed HTTPS URL.
+- **AWS Elastic Beanstalk** (used for this submission) — upload a source bundle (`git archive` of tracked files — no secrets, no cache), Node.js 22 platform, set env var `QLOO_API_KEY`. EB runs `npm install` and `npm start`, which auto-builds the client on first boot ([`scripts/start.mjs`](scripts/start.mjs)).
+- **AWS App Runner** — [`apprunner.yaml`](apprunner.yaml) included, but note: App Runner stopped accepting new customers (AWS notice, April 30, 2026); existing-customer accounts can still use it.
 - **Render** — [`render.yaml`](render.yaml) Blueprint alternative (same one-service model).
 - **Fly.io** — `fly launch` (Node 20+, port 4173), `fly secrets set QLOO_API_KEY=...`.
 
