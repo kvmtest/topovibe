@@ -41,8 +41,14 @@ export const TRENDING_PARAMS = [
 // /search — entity-ID resolution (always before signaling)
 export const SEARCH_PARAMS = ['query', 'types', 'take', 'page'];
 
-// /v2/tags — tag-URN resolution (conservative allowlist; docs guarantee `query`)
-export const TAGS_PARAMS = ['query', 'take', 'page'];
+// /v2/tags — tag-URN resolution. Verified live (Phase 1 probes): the endpoint
+// 400s without one of the filter.* selectors — `filter.query` is the keyword
+// search param (the brief's `?query=` example 400s; the API's error message
+// enumerates the valid set below).
+export const TAGS_PARAMS = [
+  'filter.query', 'filter.results.tags', 'filter.tags', 'filter.parents.types',
+  'filter.tag.types', 'filter.popularity.min', 'filter.popularity.max', 'take', 'page',
+];
 
 export class QlooUnsupportedError extends Error {
   constructor(msg) {

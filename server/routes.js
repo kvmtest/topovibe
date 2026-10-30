@@ -50,7 +50,7 @@ router.get(
     const hits = raw.map((h) => ({
       name: h.name,
       entity_id: h.entity_id,
-      subtype: h.subtype,
+      subtype: h.subtype ?? h.types?.[0],
       popularity: h.popularity,
     }));
     res.json({ results: hits, coverage: meta.coverage, query: meta.query });
