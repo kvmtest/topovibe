@@ -18,12 +18,12 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.20.2",
     "cesium": "^1.123.0",
-    "express": "^4.21.2"
+    "express": "^4.21.2",
+    "vite": "^5.4.19",
+    "vite-plugin-cesium": "^1.2.23"
   },
   "devDependencies": {
     "concurrently": "^9.1.2",
-    "nodemon": "^3.1.9",
-    "vite": "^5.4.19",
-    "vite-plugin-cesium": "^1.2.23"
+    "nodemon": "^3.1.9"
   }
 }
