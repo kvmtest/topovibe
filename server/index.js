@@ -14,6 +14,13 @@ const PORT = Number(process.env.PORT ?? 4173);
 const app = express();
 app.use(express.json());
 
+// Demo pre-cache: if scripts/precache.mjs has run, demo flows serve from disk
+// and never touch the network live (brief §9). Never committed (git-ignored).
+const precacheCount = cache.loadPrecache();
+if (precacheCount > 0) {
+  console.log(`[topovibe] demo pre-cache loaded: ${precacheCount} entries (demo never hits network live)`);
+}
+
 // REST surface (the only one — brief §5.4)
 app.use('/api', router);
 

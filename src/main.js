@@ -4,6 +4,7 @@ import { CITIES } from './cities.js';
 import { showDna } from './panels/dna.js';
 import { initHeatmap } from './layers/heatmap.js';
 import { initInsights } from './layers/insights.js';
+import { initShare } from './share.js';
 
 const viewer = createGlobe('cesiumContainer');
 initHeatmap(viewer);
@@ -35,6 +36,10 @@ window.topovibeToast = (msg, ms = 2600) => {
   clearTimeout(window.__toastTimer);
   window.__toastTimer = setTimeout(() => t.classList.add('hidden'), ms);
 };
+
+// Share links LAST: restore() clicks city buttons + fires layer events, so the
+// citybar and toast helper must exist first.
+initShare(viewer);
 
 // Deep-link boot: ?city=Austin selects a demo city on load (screenshot-friendly;
 // the full camera hash serializer lands with share.js in Phase 6).
