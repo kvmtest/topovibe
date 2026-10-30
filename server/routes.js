@@ -16,12 +16,6 @@ function sendError(res, e) {
 
 const asyncWrap = (fn) => (req, res) => fn(req, res).catch((e) => sendError(res, e));
 
-const notYet = (phase) => (req, res) =>
-  res.status(501).json({
-    error: 'NotImplementedYet',
-    message: `This endpoint lands in ${phase} of the 7-hour plan (brief §9).`,
-  });
-
 // --- GET /api/health — boot banner self-check ---------------------------
 router.get(
   '/health',
@@ -218,5 +212,68 @@ router.get(
   })
 );
 
-// --- GET /api/grounding?city=&tag= (Phase 4) ------------------------------
-router.get('/grounding', notYet('Phase 4 (Grounding Score)'));
+// --- GET /api/grounding?city=&tag= — insights + GS engine → scored venues ---
+router.get(
+  '/grounding',
+  asyncWrap(async (req, res) => {
+    const city = String(req.query.city ?? '').trim();
+    const tag = String(req.query.tag ?? '').trim();
+    if (!city || !tag) {
+      return res.status(400).json({ error: 'BadRequest', message: 'city and tag are required' });
+    }
+    const { scoreVenues, getLexicon } = await import('./grounding.js');
+
+    // Venues matching the tag, hard-filtered to the city (signal-only drifts
+    // out-of-town — verified in probes: Austin query leaked San Antonio venues)
+    let json, meta;
+    try {
+      ({ json, meta } = await qlooWithMeta('/v2/insights', {
+        'filter.type': 'urn:entity:place',
+        'filter.location.query': city,
+        'signal.interests.tags': tag,
+        'feature.explainability': 'true',
+        take: '10',
+      }));
+    } catch (e) {
+      if (/unable to resolve/i.test(e.message)) {
+        // Unknown place → honest empty result, not an error (brief §10)
+        return res.json({
+          city, tag, venues: [], lexicon: { size: 0, byKeyword: {}, failed: true },
+          formula: 'GS = 100 × clamp(0.6·A + 0.4·T − 0.3·N)',
+          coverage: 'insufficient-data', queries: [],
+          message: `Qloo cannot resolve "${city}" to a locality.`,
+        });
+      }
+      throw e;
+    }
+    const entities = json?.results?.entities ?? [];
+    const scores = await scoreVenues(entities);
+
+    const venues = entities.map((e, i) => ({
+      entity: {
+        entity_id: e.entity_id,
+        name: e.name,
+        subtype: e.subtype,
+        popularity: e.popularity,
+        location: e.location ?? null,
+        address: e.properties?.address ?? null,
+        rating: e.properties?.business_rating ?? null,
+        keywords: (e.properties?.keywords ?? []).slice(0, 6).map((k) => k.name),
+      },
+      gs: scores[i].gs,
+      components: scores[i].components,
+      confidence: scores[i].confidence,
+      explainability: e.explainability ?? e.query?.explainability ?? null,
+    }));
+
+    res.json({
+      city,
+      tag,
+      venues,
+      lexicon: { size: getLexicon().size, byKeyword: getLexicon().byKeyword, failed: getLexicon().failed },
+      formula: 'GS = 100 × clamp(0.6·A + 0.4·T − 0.3·N)',
+      coverage: venues.length === 0 ? 'insufficient-data' : meta.coverage,
+      queries: [meta.query],
+    });
+  })
+);

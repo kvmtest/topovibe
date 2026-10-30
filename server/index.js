@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { router } from './routes.js';
 import { cache, qlooWithMeta, QLOO_BASE } from './qloo.js';
+import { initGrounding } from './grounding.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
@@ -55,4 +56,11 @@ try {
 } catch (e) {
   console.error(`[topovibe] ✖ STARTUP SELF-CHECK FAIL: ${e.name}: ${e.message}`);
   console.error('[topovibe]   → server keeps running, but Qloo-backed endpoints will fail until fixed.');
+}
+
+// --- Grounding Score: resolve the analog tag lexicon (brief §5.3) ----------
+try {
+  await initGrounding();
+} catch (e) {
+  console.error(`[topovibe] grounding lexicon init failed: ${e.message} — GS will be withheld honestly`);
 }

@@ -85,7 +85,19 @@ export async function qlooWithMeta(path, params = {}) {
     );
   }
   if (res.status === 404) throw new QlooError('QlooNotFound', `HTTP 404 on ${path}`, 404);
-  if (!res.ok) throw new QlooError('QlooHttpError', `HTTP ${res.status} on ${path}`, res.status);
+  if (!res.ok) {
+    // Surface Qloo's own error detail (e.g. "unable to resolve to a valid locality")
+    let detail = '';
+    try {
+      const body = await res.json();
+      detail = body?.errors?.[0]?.message ?? '';
+    } catch { /* no JSON body */ }
+    throw new QlooError(
+      'QlooHttpError',
+      `HTTP ${res.status} on ${path}${detail ? `: ${detail}` : ''}`,
+      res.status
+    );
+  }
 
   const json = await res.json();
   cache.set(key, json);

@@ -100,7 +100,11 @@ function buildHeatbar() {
     b.textContent = p.label;
     b.dataset.tag = p.tag;
     b.title = `${p.name} heatmap`;
-    b.addEventListener('click', () => loadHeatmap(currentCity ?? { name: 'Austin', lat: 30.2672, lon: -97.7431 }, { tag: p.tag, name: p.name }));
+    // Dispatch, don't call directly: heatmap + GS markers both listen for this event
+    b.addEventListener('click', () => {
+      const city = currentCity ?? { name: 'Austin', lat: 30.2672, lon: -97.7431 };
+      window.dispatchEvent(new CustomEvent('topovibe:tag', { detail: { tag: p.tag, tagName: p.name, city } }));
+    });
     barEl.appendChild(b);
   }
   const t = document.createElement('button');
