@@ -4,7 +4,9 @@
 
 **Remove Qloo and TopoVibe is an empty basemap** — cultural intelligence is not a feature, it is the product. TopoVibe runs as a CesiumJS globe for humans and a **first-class MCP server for agents**, answering the hackathon's brief literally: an agentic tool that only works because it knows what people love.
 
-Built for the **Qloo Agentic Hackathon** · MIT License · [Development brief](../TopoVibe_Development_Brief.md)
+Built for the **Qloo Agentic Hackathon** · MIT License · [Development brief](docs/TopoVibe_Development_Brief.md)
+
+**🌐 Live demo: [topovibe.onrender.com](https://topovibe.onrender.com)** · MCP: `https://topovibe.onrender.com/mcp` (see [`mcp.json`](mcp.json)) · Verified end-to-end with [`scripts/verify-deploy.mjs`](scripts/verify-deploy.mjs) (7/7)
 
 ![TopoVibe globe on Esri World Imagery](docs/screenshots/phase0-globe.png)
 
@@ -204,7 +206,7 @@ topovibe/
 
 ## Attribution & legal
 
-- TopoVibe is a **clean-room build**, inspired by the open-source [God's Eye View](https://github.com/nordbeuggets) project (MIT) — no God's Eye View code, assets, or data were copied.
+- TopoVibe is a **clean-room build**, inspired by the open-source "God's Eye View" project (MIT) — no God's Eye View code, assets, or data were copied.
 - **Qloo**: hackathon key, valid only on `hackathon.api.qloo.com`, subject to rate/monthly quotas, expires post-judging. Responses are cached privately per Qloo terms; nothing cached is committed (`cache/` is git-ignored). Production use requires a commercial Qloo agreement.
 - **Basemap**: Esri World Imagery per Esri terms; attribution rendered on-globe.
 - Demo geography: Austin · New York City · Tokyo (the cities Qloo's own docs use in examples).

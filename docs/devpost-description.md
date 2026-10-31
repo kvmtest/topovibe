@@ -1,4 +1,4 @@
-# Devpost submission text — TopoVibe (paste-ready; fill the two URLs)
+# Devpost submission text — TopoVibe (paste-ready)
 
 ## Tagline
 
@@ -33,9 +33,9 @@ Vanilla JS + CesiumJS + Vite client; Node.js + Express server (Qloo broker, vali
 
 ## Links
 
-- **Live demo:** https://<your-render-url>.onrender.com
+- **Live demo:** https://topovibe.onrender.com
 - **Source (MIT):** https://github.com/kvmtest/topovibe
-- **MCP endpoint:** https://<your-render-url>.onrender.com/mcp (see `mcp.json` in the repo)
+- **MCP endpoint:** https://topovibe.onrender.com/mcp (see `mcp.json` in the repo)
 
 ## Honest notes for judges
 
