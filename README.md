@@ -154,9 +154,9 @@ Inspect interactively: `npx @modelcontextprotocol/inspector` → connect → `ht
 
 One service serves everything (static client + REST + MCP) — so one host covers the whole app:
 
-- **AWS Elastic Beanstalk** (used for this submission) — upload a source bundle (`git archive` of tracked files — no secrets, no cache), Node.js 22 platform, set env var `QLOO_API_KEY`. EB runs `npm install` and `npm start`, which auto-builds the client on first boot ([`scripts/start.mjs`](scripts/start.mjs)).
+- **Render free instance** (used for this submission) — [`render.yaml`](render.yaml) Blueprint: Render → New → Blueprint Instance → repo `kvmtest/topovibe` → set `QLOO_API_KEY` when prompted → Deploy. Render injects `PORT` itself; the service listens on it. Free instances sleep after ~15 min idle — point a free uptime ping (e.g. UptimeRobot, 5-min interval) at `/api/health` to keep it warm for judges. Manual alternative: New → Web Service → build `npm install && npm run build` → start `npm start`.
+- **AWS Elastic Beanstalk** (planned for the final version) — upload a source bundle (`git archive` of tracked files — no secrets, no cache), Node.js 22 platform, set env var `QLOO_API_KEY`. EB runs `npm install` and `npm start`, which auto-builds the client on first boot ([`scripts/start.mjs`](scripts/start.mjs)).
 - **AWS App Runner** — [`apprunner.yaml`](apprunner.yaml) included, but note: App Runner stopped accepting new customers (AWS notice, April 30, 2026); existing-customer accounts can still use it.
-- **Render** — [`render.yaml`](render.yaml) Blueprint alternative (same one-service model).
 - **Fly.io** — `fly launch` (Node 20+, port 4173), `fly secrets set QLOO_API_KEY=...`.
 
 After deploying, point `mcp.json` at `https://<your-host>/mcp`.

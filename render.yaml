@@ -11,8 +11,10 @@ services:
         sync: false # set manually in the Render dashboard — never commit it
       - key: QLOO_BASE_URL
         value: https://hackathon.api.qloo.com
-      - key: PORT
-        value: 4173
+      # PORT is NOT set here: Render injects its own PORT and routes to it;
+      # server/index.js reads process.env.PORT. Overriding can fail health checks.
+      - key: NODE_VERSION
+        value: "22"
       - key: DEMO_CITIES
         value: Austin,New York City,Tokyo
     healthCheckPath: /api/health
