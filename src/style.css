@@ -65,11 +65,13 @@ html, body {
 
 #heatbar {
   position: absolute;
-  top: 84px;
+  top: 116px; /* clear of the taller brand panel (observation 1) */
   left: 18px;
   z-index: 10;
   display: flex;
   gap: 6px;
+  flex-wrap: wrap;
+  max-width: 46vw;
 }
 #heatbar button {
   background: var(--panel);
@@ -83,6 +85,49 @@ html, body {
 }
 #heatbar button:hover { border-color: var(--accent); }
 #heatbar button.active { border-color: var(--accent); color: var(--accent); }
+
+/* search inputs (city + tag) */
+#citybar input, #heatbar input {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  color: var(--text);
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  width: 110px;
+  outline: none;
+  backdrop-filter: blur(6px);
+}
+#citybar input:focus, #heatbar input:focus { border-color: var(--accent); }
+#citybar input { width: 120px; }
+
+/* zoom controls, beside the relocated Cesium toolbar */
+#zoombar {
+  position: absolute;
+  left: 62px;
+  bottom: 19px;
+  z-index: 10;
+  display: flex;
+  gap: 6px;
+}
+#zoombar button {
+  width: 28px; height: 28px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  color: var(--text);
+  border-radius: 6px;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+}
+#zoombar button:hover { border-color: var(--accent); }
+
+/* "actual place" block in the GS panel */
+.venue-img { width: 100%; border-radius: 8px; margin: 8px 0 4px; display: block; }
+.venue-desc { color: var(--text); font-size: 12px; line-height: 1.45; margin: 6px 0; }
+.venue-link { color: var(--cold); font-size: 12px; text-decoration: none; }
+.venue-link:hover { text-decoration: underline; }
 
 #panel {
   position: absolute;

@@ -34,8 +34,9 @@ GS(venue) = 100 × clamp(0.6·A + 0.4·T − 0.3·N)
 
 GS is **withheld** (`gs: null`, `confidence: insufficient-data`) when affinity results are empty or the lexicon failed to resolve. It is never interpolated. Every panel shows the three component bars — the score shows its work.
 
-## Features (the 7-hour MVP cut)
+## Features
 
+**The 7-hour MVP cut:**
 - **CesiumJS 3D globe** on keyless Esri World Imagery, bundled demo cities (Austin · New York City · Tokyo), no geocoder dependency
 - **Cultural DNA panel** — click a city → signature tags, demographics (age + gender affinity deltas), top 10 places
 - **Cultural heatmap** — one tag draped over one city as affinity-colored points (blue → red), toggleable
@@ -43,6 +44,13 @@ GS is **withheld** (`gs: null`, `confidence: insufficient-data`) when affinity r
 - **TopoVibe MCP server** — 5 tools for AI agents over streamable HTTP
 - **Share links** — camera + city + tag round-trip through the URL hash
 - **Honest data everywhere** — coverage badges (`live | cached | insufficient-data`) on every panel, and the raw Qloo **query echo** behind every taste claim
+
+**Post-submission additions (from user feedback):**
+- **Any-city search** — type any city; Qloo resolves the locality itself (no geocoder) and the globe flies there
+- **Any-tag heatmaps** — drape any keyword (resolved to a real tag URN via `/v2/tags`), not just the 3 presets
+- **Venue detail** — real photos, descriptions and websites from Qloo entity records in the breakdown panel
+- **Clickable heat cells** — every cell reports its affinity + popularity
+- **Zoom +/- controls**, DNA tag chips remain clickable shortcuts to heat + GS layers
 
 ## Architecture
 

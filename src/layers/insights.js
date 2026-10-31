@@ -26,6 +26,7 @@ const markerIds = new Set();
 function clearMarkers() {
   for (const id of markerIds) viewer.entities.removeById(id);
   markerIds.clear();
+  viewer.scene.requestRender();
 }
 
 export function initInsights(v) {
@@ -40,11 +41,18 @@ export function initInsights(v) {
     loadGrounding(e.detail.city ?? currentCity, activeTag);
   });
 
-  // Click a venue marker → GS breakdown panel
+  // Unified picking: venue marker → GS breakdown; heat cell → affinity readout
   viewer.screenSpaceEventHandler.setInputAction((movement) => {
     const picked = viewer.scene.pick(movement.position);
-    if (defined(picked) && picked.id?.venue) {
+    if (!defined(picked)) return;
+    if (picked.id?.venue) {
       showGrounding(picked.id.venue, picked.id.gsMeta);
+    } else if (picked.primitive?.heatData) {
+      const h = picked.primitive.heatData;
+      window.topovibeToast?.(
+        `${h.tagName} cell (${h.geohash}) · affinity ${Math.round((h.affinityRank ?? 0) * 100)}% · popularity ${Math.round((h.popularity ?? 0) * 100)}%`,
+        3500
+      );
     }
   }, ScreenSpaceEventType.LEFT_CLICK);
 }
@@ -106,6 +114,7 @@ export async function loadGrounding(city, tagRef) {
     markerIds.add(id);
     placed++;
   }
+  viewer.scene.requestRender();
   window.topovibeToast?.(
     placed
       ? `Grounding Score: ${placed} ${tagRef.name} venues in ${city.name} (${d.coverage})`

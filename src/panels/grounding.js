@@ -42,9 +42,18 @@ export function showGrounding(venue, meta) {
 
   const kw = (venue.keywords ?? []).map((k) => `<span class="chip">${k}</span>`).join('');
 
+  // "Actual place" block — real photo + description + website from the Qloo record
+  const placeBlock =
+    venue.image || venue.description || venue.website
+      ? `${venue.image ? `<img class="venue-img" src="${venue.image}" alt="${venue.name}" loading="lazy" onerror="this.remove()">` : ''}
+         ${venue.description ? `<p class="venue-desc">${venue.description}</p>` : ''}
+         ${venue.website ? `<a class="venue-link" href="${venue.website}" target="_blank" rel="noopener">${venue.website.replace(/^https?:\/\//, '')} ↗</a>` : ''}`
+      : '';
+
   el.innerHTML = `<button class="close">×</button>
     <h2>${venue.name}</h2>
     <div style="color:var(--muted);font-size:12px;margin-bottom:8px">${venue.address ?? ''}${venue.rating ? ` · ★ ${Number(venue.rating).toFixed(1)}` : ''}</div>
+    ${placeBlock}
     ${gsBlock}
     <h3>Grounding Score components</h3>
     ${compBar('A · affinity', 'a', c.a)}

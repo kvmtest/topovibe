@@ -51,15 +51,21 @@ export function initShare(v) {
 function restore() {
   const h = new URLSearchParams(location.hash.slice(1));
   const cityName = h.get('city');
-  const cityObj = CITIES.find((c) => c.name === cityName);
   const tag = h.get('tag');
   const tagName = h.get('tagName') ?? tag;
   const cam = h.get('c');
+  const camParts = cam ? cam.split(',').map(Number) : null;
+  const camValid = camParts?.length === 3 && camParts.every(Number.isFinite);
 
-  // Select the city through the real button (single code path: fly + DNA panel)
+  // Bundled demo city OR a searched city (synthesize coords from the camera hash)
+  let cityObj = CITIES.find((c) => c.name === cityName) ?? null;
+  if (!cityObj && cityName && camValid) {
+    cityObj = { name: cityName, lon: camParts[0], lat: camParts[1], altitude: Math.max(camParts[2], 8000) };
+  }
+
+  // Select through the unified path (fly + DNA panel + layer event)
   if (cityObj) {
-    const btn = [...document.querySelectorAll('#citybar button')].find((b) => b.dataset.city === cityObj.name);
-    if (btn) btn.click();
+    window.__topovibeSelectCity?.(cityObj);
     state.city = cityObj.name;
   }
 
@@ -73,15 +79,13 @@ function restore() {
   }
 
   // Exact camera wins over the city fly-to: apply after the flight settles
-  if (cam) {
-    const [lon, lat, height] = cam.split(',').map(Number);
-    if ([lon, lat, height].every(Number.isFinite)) {
-      setTimeout(() => {
-        viewer.camera.setView({
-          destination: Cartesian3.fromDegrees(lon, lat, height),
-          orientation: { heading: 0, pitch: CesiumMath.toRadians(-90), roll: 0 },
-        });
-      }, cityObj ? 3200 : 0);
-    }
+  if (camValid) {
+    const [lon, lat, height] = camParts;
+    setTimeout(() => {
+      viewer.camera.setView({
+        destination: Cartesian3.fromDegrees(lon, lat, height),
+        orientation: { heading: 0, pitch: CesiumMath.toRadians(-90), roll: 0 },
+      });
+    }, cityObj ? 3200 : 0);
   }
 }

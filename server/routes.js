@@ -21,6 +21,15 @@ const asyncWrap = (fn) => (req, res) => fn(req, res).catch((e) => sendError(res,
 
 const isUnresolvable = (e) => /unable to resolve/i.test(e.message ?? '');
 
+/** Resolve a keyword → real tag URN before signaling (brief rule 5). URNs pass through. */
+async function resolveTagUrn(tagIn) {
+  if (tagIn.startsWith('urn:')) return { urn: tagIn, name: tagIn, meta: null };
+  const resolved = await qlooWithMeta('/v2/tags', { 'filter.query': tagIn, take: '1' });
+  const hit = resolved.json?.results?.tags?.[0];
+  if (!hit?.id) return { urn: null, name: tagIn, meta: resolved.meta };
+  return { urn: hit.id, name: hit.name, meta: resolved.meta };
+}
+
 // =====================================================================
 // Builders (shared REST + MCP)
 // =====================================================================
@@ -143,26 +152,16 @@ export async function buildDna(city) {
 
 /** Heatmap: one tag draped over one city. tag may be URN or keyword. */
 export async function buildHeatmap(city, tagIn) {
-  let tag = tagIn;
-  let tagName = tagIn;
-  let resolveMeta = null;
-  if (!tag.startsWith('urn:')) {
-    // Resolve keyword → real tag URN before signaling (brief rule 5)
-    const resolved = await qlooWithMeta('/v2/tags', { 'filter.query': tag, take: '1' });
-    resolveMeta = resolved.meta;
-    const hit = resolved.json?.results?.tags?.[0];
-    if (!hit?.id) {
-      return {
-        city,
-        tag: tagIn,
-        points: [],
-        coverage: 'insufficient-data',
-        queries: [resolved.meta.query],
-        message: `No Qloo tag found for keyword "${tagIn}".`,
-      };
-    }
-    tag = hit.id;
-    tagName = hit.name;
+  const { urn: tag, name: tagName, meta: resolveMeta } = await resolveTagUrn(tagIn);
+  if (!tag) {
+    return {
+      city,
+      tag: tagIn,
+      points: [],
+      coverage: 'insufficient-data',
+      queries: [resolveMeta.query],
+      message: `No Qloo tag found for keyword "${tagIn}".`,
+    };
   }
 
   const { json, meta } = await qlooWithMeta('/v2/insights', {
@@ -201,7 +200,17 @@ export async function buildHeatmap(city, tagIn) {
 }
 
 /** get_grounding_score: insights + GS engine → [{entity, gs, components, confidence}] */
-export async function buildGrounding(city, tag) {
+export async function buildGrounding(city, tagIn) {
+  // tag may be a keyword — resolve to a real URN first (brief rule 5)
+  const { urn: tag, name: tagName, meta: resolveMeta } = await resolveTagUrn(tagIn);
+  if (!tag) {
+    return {
+      city, tag: tagIn, venues: [], lexicon: { size: 0, byKeyword: {}, failed: true },
+      formula: 'GS = 100 × clamp(0.6·A + 0.4·T − 0.3·N)',
+      coverage: 'insufficient-data', queries: [resolveMeta.query],
+      message: `No Qloo tag found for keyword "${tagIn}".`,
+    };
+  }
   // Venues matching the tag, hard-filtered to the city (signal-only drifts
   // out-of-town — verified in probes: Austin query leaked San Antonio venues)
   let json, meta;
@@ -237,6 +246,10 @@ export async function buildGrounding(city, tag) {
       address: e.properties?.address ?? null,
       rating: e.properties?.business_rating ?? null,
       keywords: (e.properties?.keywords ?? []).slice(0, 6).map((k) => k.name),
+      image: e.properties?.images?.[0]?.url ?? null,
+      website: e.properties?.website ?? null,
+      phone: e.properties?.phone ?? null,
+      description: e.properties?.description ?? null,
     },
     gs: scores[i].gs,
     components: scores[i].components,
@@ -248,11 +261,12 @@ export async function buildGrounding(city, tag) {
   return {
     city,
     tag,
+    tagName,
     venues,
     lexicon: { size: lex.size, byKeyword: lex.byKeyword, failed: lex.failed },
     formula: 'GS = 100 × clamp(0.6·A + 0.4·T − 0.3·N)',
     coverage: venues.length === 0 ? 'insufficient-data' : meta.coverage,
-    queries: [meta.query],
+    queries: [resolveMeta?.query, meta.query].filter(Boolean),
   };
 }
 

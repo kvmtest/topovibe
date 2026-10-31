@@ -1,5 +1,6 @@
 // layers/heatmap.js — urn:heatmap grid → affinity-colored PointPrimitives (brief §5.5)
 // color = lerp(blue→red, affinity_rank); pixelSize = 4 + 10·popularity. Toggleable.
+// NOTE (requestRenderMode): imperative primitive changes need scene.requestRender().
 import { PointPrimitiveCollection, Color, Cartesian3 } from 'cesium';
 import { setCoverage } from '../panels/dna.js';
 
@@ -18,6 +19,8 @@ let collection = null;
 let activeTag = null; // { tag, name }
 let currentCity = null;
 let enabled = true;
+
+const repaint = () => viewer?.scene.requestRender();
 
 function affinityColor(rank) {
   // rank 0..1 → hue blue (0.66) → red (0.0)
@@ -61,14 +64,24 @@ export async function loadHeatmap(city, tagRef) {
   collection.removeAll();
   for (const p of d.points) {
     if (typeof p.lat !== 'number' || typeof p.lon !== 'number') continue;
-    collection.add({
+    const prim = collection.add({
       position: Cartesian3.fromDegrees(p.lon, p.lat),
       color: affinityColor(p.affinityRank),
       pixelSize: 4 + 10 * (p.popularity ?? 0.5),
     });
+    // Heat cells are pickable: clicking one reports its affinity (observation 6)
+    prim.heatData = {
+      tagName: d.tagName ?? tagRef.name,
+      city: d.city ?? city.name,
+      affinity: p.affinity,
+      affinityRank: p.affinityRank,
+      popularity: p.popularity,
+      geohash: p.geohash,
+    };
   }
   collection.show = enabled;
   syncHeatbar();
+  repaint(); // requestRenderMode: imperative primitive changes need this
 
   if (d.points.length === 0) {
     window.topovibeToast?.(`No heatmap grid for ${d.tagName ?? tagRef.name} in ${city.name} (insufficient data)`);
@@ -81,16 +94,18 @@ export function clearHeatmap() {
   collection?.removeAll();
   activeTag = null;
   syncHeatbar();
+  repaint();
 }
 
 export function toggleHeatmap() {
   enabled = !enabled;
   if (collection) collection.show = enabled;
   syncHeatbar();
+  repaint(); // without this the toggle only shows after the next camera move
   return enabled;
 }
 
-// --- preset picker bar (3 presets + on/off toggle) -------------------------
+// --- preset picker bar (3 presets + any-tag input + on/off toggle) ----------
 let barEl = null;
 function buildHeatbar() {
   barEl = document.createElement('div');
@@ -102,11 +117,23 @@ function buildHeatbar() {
     b.title = `${p.name} heatmap`;
     // Dispatch, don't call directly: heatmap + GS markers both listen for this event
     b.addEventListener('click', () => {
-      const city = currentCity ?? { name: 'Austin', lat: 30.2672, lon: -97.7431 };
-      window.dispatchEvent(new CustomEvent('topovibe:tag', { detail: { tag: p.tag, tagName: p.name, city } }));
+      dispatchTag(p.tag, p.name);
     });
     barEl.appendChild(b);
   }
+  // Any tag, not just presets: keyword resolved server-side via /v2/tags
+  const inp = document.createElement('input');
+  inp.id = 'tag-search';
+  inp.placeholder = 'any tag…';
+  inp.title = 'Drape any tag over the current city (resolved via Qloo /v2/tags)';
+  inp.setAttribute('aria-label', 'Search any tag');
+  inp.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && inp.value.trim()) {
+      dispatchTag(inp.value.trim(), inp.value.trim());
+      inp.value = '';
+    }
+  });
+  barEl.appendChild(inp);
   const t = document.createElement('button');
   t.id = 'heat-toggle';
   t.textContent = '⏻ heat';
@@ -115,6 +142,11 @@ function buildHeatbar() {
   barEl.appendChild(t);
   document.body.appendChild(barEl);
   syncHeatbar();
+}
+
+function dispatchTag(tag, tagName) {
+  const city = currentCity ?? { name: 'Austin', lat: 30.2672, lon: -97.7431 };
+  window.dispatchEvent(new CustomEvent('topovibe:tag', { detail: { tag, tagName, city } }));
 }
 
 function syncHeatbar() {
