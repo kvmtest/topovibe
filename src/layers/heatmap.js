@@ -62,11 +62,20 @@ export async function loadHeatmap(city, tagRef) {
 
   setCoverage(d.coverage);
   collection.removeAll();
+
+  // Display normalization: Qloo's raw affinity_rank clusters near 1.0, which
+  // would compress the whole layer into yellow-red. We normalize across the
+  // visible cells for color contrast (raw rank preserved in the click tooltip).
+  const ranks = d.points.map((p) => p.affinityRank).filter((x) => typeof x === 'number');
+  const rMin = Math.min(...ranks);
+  const rMax = Math.max(...ranks);
+  const norm = (r) => (rMax > rMin ? (r - rMin) / (rMax - rMin) : 0.5);
+
   for (const p of d.points) {
     if (typeof p.lat !== 'number' || typeof p.lon !== 'number') continue;
     const prim = collection.add({
       position: Cartesian3.fromDegrees(p.lon, p.lat),
-      color: affinityColor(p.affinityRank),
+      color: affinityColor(norm(p.affinityRank)),
       pixelSize: 4 + 10 * (p.popularity ?? 0.5),
     });
     // Heat cells are pickable: clicking one reports its affinity (observation 6)
@@ -74,13 +83,14 @@ export async function loadHeatmap(city, tagRef) {
       tagName: d.tagName ?? tagRef.name,
       city: d.city ?? city.name,
       affinity: p.affinity,
-      affinityRank: p.affinityRank,
+      affinityRank: p.affinityRank, // raw Qloo rank
       popularity: p.popularity,
       geohash: p.geohash,
     };
   }
   collection.show = enabled;
   syncHeatbar();
+  showLegend(d.points.length > 0, d.tagName ?? tagRef.name);
   repaint(); // requestRenderMode: imperative primitive changes need this
 
   if (d.points.length === 0) {
@@ -94,7 +104,24 @@ export function clearHeatmap() {
   collection?.removeAll();
   activeTag = null;
   syncHeatbar();
+  showLegend(false);
   repaint();
+}
+
+// --- on-screen legend: what the colors/sizes mean ----------------------------
+let legendEl = null;
+function showLegend(show, tagName = '') {
+  if (!legendEl) {
+    legendEl = document.createElement('div');
+    legendEl.id = 'heat-legend';
+    document.body.appendChild(legendEl);
+  }
+  if (!show) {
+    legendEl.style.display = 'none';
+    return;
+  }
+  legendEl.innerHTML = `<b>${tagName}</b> affinity: low <span class="grad"></span> high · dot size = popularity`;
+  legendEl.style.display = 'block';
 }
 
 export function toggleHeatmap() {
